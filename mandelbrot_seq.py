@@ -3,8 +3,8 @@ import cmath
 import matplotlib.pyplot as plt
 
 def prompt_parts():
-  cr = float(input("Real part > ") or 1)
-  ci = float(input("Imag part > ") or 0)
+  cr = float(input("Real part > ") or -.5)
+  ci = float(input("Imag part > ") or .5)
 
   c = cr + ci * 1j  # Can use complex(cr,ci)
 
@@ -12,6 +12,8 @@ def prompt_parts():
 
 def escape_steps(c, get_seq=False):
 
+  # TODO more rigorous test of boundedness? Some numbers clearly diverge to inf
+  # (any real > 0) yet they will only be picked up after sufficient iters
   iters = 80
   
   #seq = [None for _ in range(iters)]
@@ -48,7 +50,14 @@ def plot_seq(seq):
   plt.show()
 
 def plot_set():
-  minstart, maxstart = -2.5, 2.5
+  center, radius = (0,0), 2.2
+  # minibrot
+  #center = (-1.86,0)
+  #radius = .003
+  #center = (-1.86,0)
+  #radius = .003
+  xmin, xmax = center[0] - radius, center[0] + radius
+  ymin, ymax = center[1] - radius, center[1] + radius
   res = 1001    # Resolution (odd number to include originin, even to omit)
                 # Including the origin (and real axis) is meaningful because
                 # these numbers are indeed in the Mandelbrot set.
@@ -57,8 +66,8 @@ def plot_set():
   # 3001 runs in 16s, iters=20
   # 4001 runs in >30s, iters=20
   #xin,yin = np.mgrid[-3:3:7j, -3:3:7j]
-  x = np.linspace(minstart, maxstart, res)
-  y = np.linspace(minstart, maxstart, res)
+  x = np.linspace(xmin, xmax, res)
+  y = np.linspace(ymin, ymax, res)
   xs, ys = np.meshgrid(x,y,sparse=True)
   #xys = np.meshgrid(x,y,sparse=True)
   vcomplex = np.vectorize(complex)
@@ -69,7 +78,8 @@ def plot_set():
   #plt.contourf(x,y,zs)
   # TODO change ticks on imshow plot
   # TODO set_bad() for masked values (np.nan or -1?)
-  plt.imshow(zs, extent=[minstart,maxstart,minstart,maxstart])
+  plt.imshow(zs, extent=[xmin,xmax,ymin,ymax],\
+             interpolation='antialiased')  # default seems to be 'antialiased'
       #extent=[-zs.shape[1]/2., zs.shape[1]/2., -zs.shape[0]/2., zs.shape[0]/2. ])
       # Centers the labels but still represents number of squares.
   plt.axis("scaled")
