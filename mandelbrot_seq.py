@@ -49,7 +49,7 @@ def plot_seq(seq):
 
 def plot_set():
   minstart, maxstart = -2.5, 2.5
-  res = 2001    # Resolution (odd number to include originin, even to omit)
+  res = 1001    # Resolution (odd number to include originin, even to omit)
                 # Including the origin (and real axis) is meaningful because
                 # these numbers are indeed in the Mandelbrot set.
   # Segmentation fault (core dumped) at res=5001, iters=20
@@ -69,8 +69,9 @@ def plot_set():
   #plt.contourf(x,y,zs)
   # TODO change ticks on imshow plot
   # TODO set_bad() for masked values (np.nan or -1?)
-  plt.imshow(zs, \
-      extent=[-zs.shape[1]/2., zs.shape[1]/2., -zs.shape[0]/2., zs.shape[0]/2. ])
+  plt.imshow(zs, extent=[minstart,maxstart,minstart,maxstart])
+      #extent=[-zs.shape[1]/2., zs.shape[1]/2., -zs.shape[0]/2., zs.shape[0]/2. ])
+      # Centers the labels but still represents number of squares.
   plt.axis("scaled")
   plt.colorbar()
   plt.show()
