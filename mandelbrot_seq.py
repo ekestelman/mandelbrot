@@ -10,11 +10,11 @@ def prompt_parts():
 
   return c
 
-def escape_steps(c, get_seq=False):
+def escape_steps(c, iters=80, get_seq=False):
 
   # TODO more rigorous test of boundedness? Some numbers clearly diverge to inf
   # (any real > 0) yet they will only be picked up after sufficient iters
-  iters = 80
+  #iters = 80  # Optional parameter
   
   #seq = [None for _ in range(iters)]
   #
@@ -23,6 +23,12 @@ def escape_steps(c, get_seq=False):
   escaped = False
   
   # TODO test out how much increasing iters affects computation time
+  # TODO seq is only needed if get_seq=True, else just count.
+  # ^Actually seq is useful to check repeats for faster determination of some
+  # point in set---but this is probably a small subset.
+  # TODO print to file for plotting high res (avoid core dump?)
+  # TODO quickly determine if certain points are bounded? Or certain points
+  # clearly unbounded after anough iters?
   for i in range(1, iters):
     #seq[i] = seq[i-1]**2 + c
     seq.append(seq[i-1]**2 + c)
@@ -54,10 +60,13 @@ def plot_set():
   # minibrot
   #center = (-1.86,0)
   #radius = .003
-  #center = (-1.86,0)
-  #radius = .003
+  #center = (.1,.65)
+  #radius = .05
+  #center = (.13,.61)
+  #radius = .02
   xmin, xmax = center[0] - radius, center[0] + radius
   ymin, ymax = center[1] - radius, center[1] + radius
+  maxiters = 80
   res = 1001    # Resolution (odd number to include originin, even to omit)
                 # Including the origin (and real axis) is meaningful because
                 # these numbers are indeed in the Mandelbrot set.
@@ -74,7 +83,7 @@ def plot_set():
   cs = vcomplex(xs,ys)
   #cs = lambda a,b: vcomplex(a,b)
   vescape = np.vectorize(escape_steps)
-  zs = vescape(cs)
+  zs = vescape(cs, iters=maxiters)
   #plt.contourf(x,y,zs)
   # TODO change ticks on imshow plot
   # TODO set_bad() for masked values (np.nan or -1?)
@@ -84,6 +93,7 @@ def plot_set():
       # Centers the labels but still represents number of squares.
   plt.axis("scaled")
   plt.colorbar()
+  plt.title(r"Resolution={res}$\times${res}. Max iters={maxiters}".format(res=res, maxiters=maxiters))
   plt.show()
   #zs = np.
   #plt.plot(x,y,'o', color='k')
@@ -93,7 +103,7 @@ if __name__ == "__main__":
   if 0:
     c = prompt_parts()
     get_seq = True
-    seq = escape_steps(c, get_seq=get_seq)
+    seq = escape_steps(c, get_seq=get_seq, iters=80)
     print(seq)
     if get_seq:
       plot_seq(seq)
