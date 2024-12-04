@@ -27,6 +27,7 @@ def escape_steps(c, iters=80, get_seq=False):
   # ^Actually seq is useful to check repeats for faster determination of some
   # point in set---but this is probably a small subset.
   # TODO print to file for plotting high res (avoid core dump?)
+  # autoname file based on center, radius, res, maxiter
   # TODO quickly determine if certain points are bounded? Or certain points
   # clearly unbounded after anough iters?
   for i in range(1, iters):
@@ -42,6 +43,36 @@ def escape_steps(c, iters=80, get_seq=False):
     return i
   #return iters + 1      # return something to indicate that z_n did not escape
   return 0              # Did not escape
+
+def v_escape_steps(c, iters=80): # Vectorized version of escape_steps()
+  # c should be nparray
+  #c = np.array([1+0j,2+0j,-2+0j,-1+0j,1j])
+  #print(c)
+  steps = np.ones(np.shape(c)) # Grid of steps taken
+  # If z_0 = 0, each c takes at least 1 step to escape.
+  steps = np.where(np.abs(c)>2, steps, steps + 1)
+  # Check where |z_1| > 2
+  #print('steps declared')
+  c_init = c                    # Grid of starting values
+  # c is z_1
+  #print('c_init declared')
+  for i in range(2, iters):
+  #  print(f'begin loop iter = {i}')
+    #c = np.multiply(c,c,where=np.abs(c)<2) + c_init
+    # ^Not as good because we keep adding c_init anyway, but works now
+    #c = np.multiply(c,c) + c_init # Leads to NANs
+    steps = np.where(np.abs(c)>2, steps, steps + 1)
+    # Should steps be initialized at 1s instead of 0s?
+    # i=2: check where |z_1|>2. Then compute z_2.
+    c = np.where(np.abs(c)>2, c, c * c + c_init)
+    # After first iteration we are at z_2
+    # Can't pass c in cmath.polar()
+  steps = np.where(np.abs(c)>2, steps, 0)
+  # ^Can we check where steps=i instead of abs?
+  #  print(c)
+  #print('loop exit')
+  # XXX multiply where to omit anything outside of 2? missing way to count steps
+  return steps
 
 def plot_seq(seq):
   reals = [x.real for x in seq]
@@ -79,11 +110,13 @@ def plot_set():
   y = np.linspace(ymin, ymax, res)
   xs, ys = np.meshgrid(x,y,sparse=True)
   #xys = np.meshgrid(x,y,sparse=True)
-  vcomplex = np.vectorize(complex)
+  vcomplex = np.vectorize(complex) # TODO can we initialize a complex grid?
+  # Consider C++ or Fortran
   cs = vcomplex(xs,ys)
+  zs = v_escape_steps(cs)#;quit() # XXX
   #cs = lambda a,b: vcomplex(a,b)
   vescape = np.vectorize(escape_steps)
-  zs = vescape(cs, iters=maxiters)
+  #XXX zs = vescape(cs, iters=maxiters)
   #plt.contourf(x,y,zs)
   # TODO change ticks on imshow plot
   # TODO set_bad() for masked values (np.nan or -1?)
