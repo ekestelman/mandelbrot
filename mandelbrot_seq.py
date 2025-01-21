@@ -1,6 +1,7 @@
 import numpy as np
 import cmath
 import matplotlib.pyplot as plt
+import time
 
 def prompt_parts():
   cr = float(input("Real part > ") or -.5)
@@ -113,10 +114,17 @@ def plot_set():
   vcomplex = np.vectorize(complex) # TODO can we initialize a complex grid?
   # Consider C++ or Fortran
   cs = vcomplex(xs,ys)
-  zs = v_escape_steps(cs)#;quit() # XXX
+  tstart = time.time()
+  zs = v_escape_steps(cs, iters=maxiters)#;quit() # XXX
+  tstop = time.time()
+  print(tstop-tstart)
   #cs = lambda a,b: vcomplex(a,b)
   vescape = np.vectorize(escape_steps)
-  #XXX zs = vescape(cs, iters=maxiters)
+  tstart = time.time()
+  zs = vescape(cs, iters=maxiters)
+  tstop = time.time()
+  print(tstop-tstart)
+  # XXX new vectorized fun isn't faster at res=2001 :(
   #plt.contourf(x,y,zs)
   # TODO change ticks on imshow plot
   # TODO set_bad() for masked values (np.nan or -1?)
